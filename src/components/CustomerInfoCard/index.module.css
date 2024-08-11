@@ -1,0 +1,14 @@
+.card {
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  height: auto;
+  border-bottom: 1px solid #f1efef;
+  cursor: pointer;
+}
+
+.name {
+  font-size: 22px;
+}
