@@ -1,9 +1,14 @@
 import styles from "./index.module.css";
 
+interface NameType {
+  title: string;
+  first: string;
+  last: string;
+}
 interface CustomerInfoCardProps {
-  name: object;
+  name: NameType;
   onClick: () => void;
-  selectedCardIndex: number;
+  selectedCardIndex: number | null;
   index: number;
 }
 

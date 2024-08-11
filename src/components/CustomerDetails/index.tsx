@@ -1,42 +1,53 @@
 import React, { useEffect, useState } from "react";
 import styles from "./index.module.css";
 import CustomerInfoCard from "src/components/CustomerInfoCard";
+import {
+  ImageResponse,
+  UserResponse,
+} from "src/components/CustomerDetails/index.interface";
 
 const CustomerDetails = () => {
-  const [customers, setCustomers] = useState([]);
-  const [selectedCardIndex, setSelectedCardIndex] = useState(null);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [customerImages, setCustomerImages] = useState(null);
+  const [customers, setCustomers] = useState<UserResponse[]>([]);
+  const [selectedCardIndex, setSelectedCardIndex] = useState<null | number>(
+    null
+  );
+  const [selectedCustomer, setSelectedCustomer] = useState<null | UserResponse>(
+    null
+  );
+  const [customerImages, setCustomerImages] = useState<ImageResponse[]>([]);
   const [currentBatch, setCurrentBatch] = useState(0);
   let currentImages;
 
+  // re-setting the interval when a new customer is selected from the list
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBatch((prevBatch) => {
-        const newBatchValue =
-          (prevBatch + 1) % Math.floor(customerImages.length / 9);
-        return newBatchValue;
-      });
-    }, 10000); // Change batch every 10 seconds
+    if (customerImages) {
+      const interval = setInterval(() => {
+        setCurrentBatch((prevBatch) => {
+          const newBatchValue =
+            (prevBatch + 1) % Math.floor(customerImages.length / 9);
+          return newBatchValue;
+        });
+      }, 10000); // Change batch every 10 seconds
 
-    return () => clearInterval(interval); // Clean up on unmount
+      return () => clearInterval(interval); // Clean up on unmount
+    }
   }, [customerImages]);
 
+  // getting first 9 images from the array "customerImages", based in currentBatch value (initiallly 0, then
+  // 1, 2 then again 0)
   const getImagesForCurrentBatch = () => {
     const startIndex = currentBatch * 9;
-    // console.log(startIndex);
-    return customerImages.slice(startIndex, startIndex + 9);
+    return customerImages!.slice(startIndex, startIndex + 9);
   };
 
-  if (customerImages) {
+  if (customerImages.length !== 0) {
     currentImages = getImagesForCurrentBatch();
-    // console.log("urrent images: ", currentImages);
   }
 
-  // getting the user data form "randomuser.me"
+  // getting the user data form "https://randomuser.me" api
   useEffect(() => {
     const getData = async () => {
-      const res = await fetch("https://randomuser.me/api/?results=10");
+      const res = await fetch("https://randomuser.me/api/?results=1000");
       const customerData = await res.json();
       setCustomers(customerData.results);
     };
@@ -44,10 +55,13 @@ const CustomerDetails = () => {
     getData();
   }, []);
 
-  //getting images form a random page between page number 1 and 33 because after page 33 there are not sufficient images in the api response
+  //getting images form "https://picsum.photos/" api from a random page between page number 1 and 33 because
+  //after page 33 there are not sufficient images in the api response.
+  // We fetch the images first on page load then every time when "selectedCardIndex" changes, i.e when user
+  // clicks on a customer card from the list
   useEffect(() => {
     const getImages = async () => {
-      const randomPageNumber = Math.floor(Math.random() * 33) + 1; //generate a random number between 1-33, both inclusive
+      const randomPageNumber = Math.floor(Math.random() * 33) + 1; //generate a random number between 1 and 33, both inclusive
       const imagesData = await fetch(
         `https://picsum.photos/v2/list?page=${randomPageNumber}`
       );
@@ -62,7 +76,7 @@ const CustomerDetails = () => {
     const selectedCustomer = customers.filter(
       (customer) => customer.email === email
     );
-    setSelectedCustomer(selectedCustomer);
+    setSelectedCustomer(selectedCustomer[0]);
   };
 
   return (
@@ -80,6 +94,7 @@ const CustomerDetails = () => {
                 }}
                 selectedCardIndex={selectedCardIndex}
                 index={index}
+                key={index}
               />
             ))
           ) : (
@@ -90,31 +105,32 @@ const CustomerDetails = () => {
           {selectedCustomer !== null ? (
             <div className={styles["customer-details"]}>
               <span className={styles["customer-details-heading"]}>
-                {selectedCustomer[0].name.title}.{" "}
-                {selectedCustomer[0].name.first} {selectedCustomer[0].name.last}
+                {selectedCustomer.name.title}. {selectedCustomer.name.first}{" "}
+                {selectedCustomer.name.last}
               </span>
               <p className={styles["details"]}>
                 <p>
                   <span className={styles["details-sub-heading"]}>
                     Address:
                   </span>{" "}
-                  Street No. {selectedCustomer[0].location.street.number},{" "}
-                  {selectedCustomer[0].location.street.name},{" "}
-                  {selectedCustomer[0].location.city},{" "}
-                  {selectedCustomer[0].location.state},{" "}
-                  {selectedCustomer[0].location.country}.
+                  Street No. {selectedCustomer.location.street.number},{" "}
+                  {selectedCustomer.location.street.name},{" "}
+                  {selectedCustomer.location.city},{" "}
+                  {selectedCustomer.location.state},{" "}
+                  {selectedCustomer.location.country}.
                 </p>
                 <p>
                   <span className={styles["details-sub-heading"]}>
                     Postcode:-{" "}
                   </span>
-                  {selectedCustomer[0].location.postcode}
+                  {selectedCustomer.location.postcode}
                 </p>
               </p>
+              {/* using ! after currentImages because we know it will not be undefined */}
               <div className={styles["flex-container"]}>
-                {customerImages &&
-                  currentImages.map((image, index) => (
-                    <div className={styles["flex-item"]}>
+                {customerImages.length !== 0 &&
+                  currentImages!.map((image, index) => (
+                    <div className={styles["flex-item"]} key={index}>
                       <img src={image.download_url} alt="customer-image" />
                     </div>
                   ))}
