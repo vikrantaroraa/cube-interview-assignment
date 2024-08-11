@@ -109,7 +109,7 @@ const CustomerDetails = () => {
                 {selectedCustomer.name.last}
               </span>
               <p className={styles["details"]}>
-                <p>
+                <span>
                   <span className={styles["details-sub-heading"]}>
                     Address:
                   </span>{" "}
@@ -118,13 +118,13 @@ const CustomerDetails = () => {
                   {selectedCustomer.location.city},{" "}
                   {selectedCustomer.location.state},{" "}
                   {selectedCustomer.location.country}.
-                </p>
-                <p>
+                </span>
+                <span>
                   <span className={styles["details-sub-heading"]}>
                     Postcode:-{" "}
                   </span>
                   {selectedCustomer.location.postcode}
-                </p>
+                </span>
               </p>
               {/* using ! after currentImages because we know it will not be undefined */}
               <div className={styles["flex-container"]}>
